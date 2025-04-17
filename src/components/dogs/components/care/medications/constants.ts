@@ -1,44 +1,32 @@
 
-import { MedicationFrequencyConstants } from '@/utils/medicationUtils';
-
-// Medication frequency options
-export const MedicationFrequencyOptions: {
-  value: string;
-  label: string;
-}[] = [
-  { value: MedicationFrequencyConstants.DAILY, label: 'Once daily' },
-  { value: MedicationFrequencyConstants.TWICE_DAILY, label: 'Twice daily' },
-  { value: MedicationFrequencyConstants.WEEKLY, label: 'Weekly' },
-  { value: MedicationFrequencyConstants.BIWEEKLY, label: 'Every two weeks' },
-  { value: MedicationFrequencyConstants.MONTHLY, label: 'Monthly' },
-  { value: MedicationFrequencyConstants.EVERY_OTHER_DAY, label: 'Every other day' },
-  { value: MedicationFrequencyConstants.AS_NEEDED, label: 'As needed' }
+// Define constants for medication UI
+export const DOSAGE_UNITS = [
+  'mg', 'ml', 'g', 'tablet(s)', 'capsule(s)', 'drop(s)', 'puff(s)', 'unit(s)', 'tsp', 'tbsp', 'oz'
 ];
 
-// Administration route options
-export const AdministrationRouteOptions = [
-  { value: 'oral', label: 'Oral' },
-  { value: 'topical', label: 'Topical' },
-  { value: 'injection', label: 'Injection' },
-  { value: 'drops', label: 'Drops' },
-  { value: 'inhaled', label: 'Inhaled' },
-  { value: 'other', label: 'Other' }
+// Define frequency options for medication
+export const FREQUENCY = {
+  ONCE_DAILY: 'Once daily',
+  TWICE_DAILY: 'Twice daily',
+  THREE_TIMES_DAILY: 'Three times daily',
+  FOUR_TIMES_DAILY: 'Four times daily',
+  EVERY_OTHER_DAY: 'Every other day',
+  WEEKLY: 'Weekly',
+  BIWEEKLY: 'Bi-weekly',
+  MONTHLY: 'Monthly',
+  AS_NEEDED: 'As needed (PRN)',
+  CUSTOM: 'Custom'
+};
+
+// Add alias for backward compatibility
+FREQUENCY.DAILY = FREQUENCY.ONCE_DAILY;
+
+// Define duration units
+export const DURATION_UNITS = [
+  'day(s)', 'week(s)', 'month(s)'
 ];
 
-// Dosage unit options
-export const DosageUnitOptions = [
-  { value: 'mg', label: 'mg' },
-  { value: 'ml', label: 'ml' },
-  { value: 'pill', label: 'pill(s)' },
-  { value: 'tablet', label: 'tablet(s)' },
-  { value: 'capsule', label: 'capsule(s)' },
-  { value: 'application', label: 'application(s)' },
-  { value: 'unit', label: 'unit(s)' }
-];
-
-// Duration unit options
-export const DurationUnitOptions = [
-  { value: 'days', label: 'Days' },
-  { value: 'weeks', label: 'Weeks' },
-  { value: 'months', label: 'Months' }
+// Define routes of administration
+export const ADMINISTRATION_ROUTES = [
+  'Oral', 'Topical', 'Injection', 'Inhaled', 'Rectal', 'Eye drops', 'Ear drops', 'Nasal', 'Other'
 ];

@@ -1,6 +1,7 @@
 
 import { useState, useCallback } from 'react';
-import { HealthRecord, WeightRecord, HealthRecordTypeEnum } from '@/types';
+import { HealthRecord, WeightRecord } from '@/types';
+import { HealthRecordTypeEnum } from '@/types/health-enums';
 import { useHealthRecords } from './useHealthRecords';
 import { useWeightTracking } from './useWeightTracking';
 
@@ -11,8 +12,9 @@ export interface UseHealthTabResult {
   recordDialogOpen: boolean;
   weightDialogOpen: boolean;
   healthIndicatorDialogOpen: boolean;
-  selectedRecordType?: HealthRecordTypeEnum;
+  selectedRecordType?: typeof HealthRecordTypeEnum[keyof typeof HealthRecordTypeEnum];
   selectedRecord?: string;
+  dogId: string; // Add this property
   isLoading: boolean;
   error: any;
   
@@ -38,7 +40,11 @@ export interface UseHealthTabResult {
   vaccinationRecords: HealthRecord[];
   examinationRecords: HealthRecord[];
   medicationRecords: HealthRecord[];
-  getRecordsByType: (type: HealthRecordTypeEnum) => HealthRecord[];
+  getRecordsByType: (type: typeof HealthRecordTypeEnum[keyof typeof HealthRecordTypeEnum]) => HealthRecord[];
+  
+  // Add missing properties
+  setRecordToEdit: (recordId: string) => void;
+  setRecordToDelete: (recordId: string) => void;
 }
 
 export const useHealthTab = (dogId: string): UseHealthTabResult => {
@@ -46,7 +52,7 @@ export const useHealthTab = (dogId: string): UseHealthTabResult => {
   const [recordDialogOpen, setRecordDialogOpen] = useState(false);
   const [weightDialogOpen, setWeightDialogOpen] = useState(false);
   const [healthIndicatorDialogOpen, setHealthIndicatorDialogOpen] = useState(false);
-  const [selectedRecordType, setSelectedRecordType] = useState<HealthRecordTypeEnum>();
+  const [selectedRecordType, setSelectedRecordType] = useState<typeof HealthRecordTypeEnum[keyof typeof HealthRecordTypeEnum]>();
   const [selectedRecord, setSelectedRecord] = useState<string>();
   
   const { 
@@ -128,13 +134,28 @@ export const useHealthTab = (dogId: string): UseHealthTabResult => {
   }, [refreshHealthRecords, refreshWeightRecords]);
   
   // Filter health records by type
-  const getRecordsByType = useCallback((type: HealthRecordTypeEnum) => {
+  const getRecordsByType = useCallback((type: typeof HealthRecordTypeEnum[keyof typeof HealthRecordTypeEnum]) => {
     return healthRecords.filter(record => record.record_type === type);
   }, [healthRecords]);
   
   const vaccinationRecords = getRecordsByType(HealthRecordTypeEnum.VACCINATION);
   const examinationRecords = getRecordsByType(HealthRecordTypeEnum.EXAMINATION);
   const medicationRecords = getRecordsByType(HealthRecordTypeEnum.MEDICATION);
+  
+  // Add missing methods
+  const setRecordToEdit = useCallback((recordId: string) => {
+    const record = healthRecords.find(r => r.id === recordId);
+    if (record) {
+      setSelectedRecordType(record.record_type as typeof HealthRecordTypeEnum[keyof typeof HealthRecordTypeEnum]);
+      setSelectedRecord(recordId);
+      setRecordDialogOpen(true);
+    }
+  }, [healthRecords]);
+  
+  const setRecordToDelete = useCallback((recordId: string) => {
+    setSelectedRecord(recordId);
+    // Add dialog handling for deletion confirmation if needed
+  }, []);
   
   return {
     healthRecords,
@@ -145,6 +166,7 @@ export const useHealthTab = (dogId: string): UseHealthTabResult => {
     healthIndicatorDialogOpen,
     selectedRecordType,
     selectedRecord,
+    dogId, // Export dogId
     isLoading: isLoadingHealth || isLoadingWeight,
     error: healthError || weightError,
     
@@ -169,6 +191,10 @@ export const useHealthTab = (dogId: string): UseHealthTabResult => {
     vaccinationRecords,
     examinationRecords,
     medicationRecords,
-    getRecordsByType
+    getRecordsByType,
+    
+    // Include the new methods
+    setRecordToEdit,
+    setRecordToDelete
   };
 };

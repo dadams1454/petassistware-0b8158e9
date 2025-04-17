@@ -1,12 +1,12 @@
 
 import { useState, useEffect } from 'react';
-import { DogFlag } from '@/types/dailyCare';
-import { toast } from '@/hooks/use-toast';
+import { DogFlag, FlagType } from '@/types/dailyCare';
+import { useToast } from '@/components/ui/use-toast';
 
 export interface UseFlagHandlingProps {
   initialFlags?: DogFlag[];
   onFlagChange?: (flags: DogFlag[]) => void;
-  dogId?: string; // Added missing property
+  dogId?: string;
   setOtherDogs?: React.Dispatch<React.SetStateAction<any[]>>;
   incompatibleDogs?: string[];
   setIncompatibleDogs?: React.Dispatch<React.SetStateAction<string[]>>;
@@ -30,6 +30,7 @@ export const useFlagHandling = ({
 }: UseFlagHandlingProps) => {
   const [localSelectedFlags, setLocalSelectedFlags] = useState<DogFlag[]>(initialFlags);
   const [hasConflict, setHasConflict] = useState(false);
+  const { toast } = useToast();
   
   // Use props values if provided, otherwise use local state
   const selectedFlags = propSelectedFlags || localSelectedFlags;
@@ -93,7 +94,7 @@ export const useFlagHandling = ({
     }
   };
 
-  // Add the missing handler for incompatible dog toggling
+  // Add handler for incompatible dog toggling
   const handleIncompatibleDogToggle = (dogId: string) => {
     if (!setIncompatibleDogs) return;
     
@@ -104,106 +105,52 @@ export const useFlagHandling = ({
     }
   };
 
-  // Add the missing compileFlags function
+  // Compile flags function
   const compileFlags = (): DogFlag[] => {
     const flags: DogFlag[] = [...selectedFlags];
     
     // Add special attention flag if note exists
-    if (specialAttentionNote && specialAttentionNote.trim()) {
+    if (specialAttentionNote && specialAttentionNote.trim() !== '') {
       flags.push({
-        id: 'special-attention-' + Date.now(),
+        id: 'special-attention',
         name: 'Special Attention',
-        color: '#FF5733',
-        type: 'special_attention',
-        value: specialAttentionNote
+        color: '#ff9900',
+        description: specialAttentionNote,
+        type: 'special_attention'
       });
     }
     
-    // Add other flag note if exists
-    if (otherFlagNote && otherFlagNote.trim()) {
+    // Add other flag if note exists
+    if (otherFlagNote && otherFlagNote.trim() !== '') {
       flags.push({
-        id: 'other-' + Date.now(),
-        name: 'Other',
-        color: '#808080',
-        type: 'other',
-        value: otherFlagNote
+        id: 'other-note',
+        name: 'Other Note',
+        color: '#888888',
+        description: otherFlagNote,
+        type: 'other'
       });
     }
     
     // Add incompatible dogs flag if any are selected
     if (incompatibleDogs && incompatibleDogs.length > 0) {
       flags.push({
-        id: 'incompatible-' + Date.now(),
+        id: 'incompatible-dogs',
         name: 'Incompatible Dogs',
-        color: '#FF0000',
+        color: '#cc0000',
+        description: `Incompatible with dogs: ${incompatibleDogs.join(', ')}`,
         type: 'incompatible',
-        value: incompatibleDogs.join(',')
+        incompatible_with: incompatibleDogs
       });
     }
     
     return flags;
   };
 
-  const createNoteFlag = () => {
-    // Create a properly structured DogFlag object
-    const noteFlag: DogFlag = {
-      id: 'note-' + Date.now(),
-      name: 'Note Added',
-      color: '#FFD700',
-      type: 'note'
-    };
-    
-    toggleFlag(noteFlag);
-  };
-
-  const createUrgentFlag = (incompatibleFlags: string[] = []) => {
-    // Create a properly structured DogFlag object
-    const urgentFlag: DogFlag = {
-      id: 'urgent-' + Date.now(),
-      name: 'Urgent',
-      color: '#FF0000',
-      type: 'urgent',
-      incompatible_with: incompatibleFlags
-    };
-    
-    toggleFlag(urgentFlag);
-  };
-
-  const createFollowUpFlag = (value: string) => {
-    // Create a properly structured DogFlag object
-    const followUpFlag: DogFlag = {
-      id: 'follow-up-' + Date.now(),
-      name: 'Follow Up',
-      color: '#FFA500',
-      type: 'follow-up',
-      value
-    };
-    
-    toggleFlag(followUpFlag);
-  };
-
-  const createAbnormalFlag = (value: string) => {
-    // Create a properly structured DogFlag object
-    const abnormalFlag: DogFlag = {
-      id: 'abnormal-' + Date.now(),
-      name: 'Abnormal',
-      color: '#8B0000',
-      type: 'abnormal',
-      value
-    };
-    
-    toggleFlag(abnormalFlag);
-  };
-
   return {
     selectedFlags,
     hasConflict,
     toggleFlag,
-    createNoteFlag,
-    createUrgentFlag,
-    createFollowUpFlag,
-    createAbnormalFlag,
-    handleIncompatibleDogToggle, // Added missing function
-    compileFlags // Added missing function
+    handleIncompatibleDogToggle,
+    compileFlags
   };
 };

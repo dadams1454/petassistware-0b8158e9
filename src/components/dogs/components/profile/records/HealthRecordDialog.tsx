@@ -6,13 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
-import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
+import { HealthRecord } from '@/types/health';
+import { HealthRecordTypeEnum } from '@/types/health-enums';
 
 interface HealthRecordDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   dogId: string;
-  recordType: HealthRecordTypeEnum;
+  recordType: typeof HealthRecordTypeEnum[keyof typeof HealthRecordTypeEnum];
   recordId?: string;
   onSave: (data: HealthRecord) => void;
 }
@@ -71,6 +72,7 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
     } else {
       // Create new record
       const healthRecord: HealthRecord = {
+        id: crypto.randomUUID(), // Generate a temporary ID for new records
         dog_id: dogId,
         visit_date: visitDate,
         date: visitDate, // For compatibility

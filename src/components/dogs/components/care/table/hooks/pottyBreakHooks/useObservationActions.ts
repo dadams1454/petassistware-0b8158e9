@@ -43,7 +43,7 @@ export const useObservationActions = (
       console.log('Submitting observation:', {
         dog_id: dogId,
         category,
-        task: observationType, // Changed from task_name to task
+        task: observationType, // Use task property as required by CareLogFormData
         timestamp: timestampString,
         notes: defaultText
       });
@@ -51,7 +51,7 @@ export const useObservationActions = (
       const result = await addCareLog({
         dog_id: dogId,
         category: category,
-        task: observationType, // Fixed to use task instead of task_name
+        task: observationType, // Use task property as required by CareLogFormData
         timestamp: timestampString,
         notes: defaultText
       });

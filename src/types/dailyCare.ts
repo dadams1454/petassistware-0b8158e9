@@ -10,7 +10,7 @@ export interface DailyCarelog {
   timestamp: string;
   category: string;
   task: string;
-  task_name: string; // Added this to fix compatibility issues
+  task_name?: string; // Added this to fix compatibility issues
   notes?: string;
   flags?: string[];
   completed_by?: string;
@@ -53,9 +53,10 @@ export interface DogCareStatus {
   last_updated: string;
   flags?: DogFlag[];
   
-  // Extended properties for compatibility
+  // Extended properties for compatibility with dog.ts DogCareStatus
   breed?: string;
   sex?: string;
+  gender?: string; // Added for compatibility
   color?: string;
   dog_photo?: string;
   photo_url?: string;
@@ -119,3 +120,6 @@ export interface CareScheduleItem {
 
 // Alias type for compatibility
 export type CareLog = DailyCarelog;
+
+// Define flag types for the toggleFlag function
+export type FlagType = "other" | "special_attention" | "incompatible" | "in_heat";

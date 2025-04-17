@@ -1,130 +1,73 @@
 
-import { MedicationStatusResult } from './medication-status';
-import { AppetiteLevel, EnergyLevel, StoolConsistency } from './health-enums';
-import { WeightUnit } from './weight-units';
+import { HealthRecordTypeEnum } from './health-enums';
 
-/**
- * Health Record interfaces
- */
-
-// Base Health Record
+// Basic health record
 export interface HealthRecord {
   id: string;
-  dog_id?: string;
-  puppy_id?: string;
+  dog_id: string;
   record_type: string;
-  timestamp?: string;
-  date?: string;
   visit_date?: string;
-  notes?: string;
-  record_notes?: string;
-  description?: string;
-  vet_name?: string;
+  date?: string; // For backward compatibility
   title?: string;
+  description?: string;
   document_url?: string;
-  created_by?: string;
+  record_notes?: string;
   created_at: string;
-  updated_at?: string;
-  performed_by?: string; // Added this property
-  
-  // For upcoming health records
   next_due_date?: string;
-  
-  // Vaccination-specific fields
+  performed_by?: string; // Add this property
+  vet_name?: string;
+}
+
+// Type guard to check if a health record is a vaccination
+export function isVaccination(record: HealthRecord): boolean {
+  return record.record_type === HealthRecordTypeEnum.VACCINATION;
+}
+
+// Add more type guards as needed
+export function isExamination(record: HealthRecord): boolean {
+  return record.record_type === HealthRecordTypeEnum.EXAMINATION;
+}
+
+export function isMedication(record: HealthRecord): boolean {
+  return record.record_type === HealthRecordTypeEnum.MEDICATION;
+}
+
+// Vaccination record for viewing/editing
+export interface Vaccination extends HealthRecord {
   vaccine_name?: string;
   manufacturer?: string;
   lot_number?: string;
   expiration_date?: string;
-  
-  // Medication-specific fields
-  medication_name?: string;
-  dosage?: number;
-  dosage_unit?: string;
-  frequency?: string;
-  start_date?: string;
-  end_date?: string;
-  duration?: number;
-  duration_unit?: string;
-  administration_route?: string;
-  
-  // Examination-specific fields
-  examination_type?: string;
-  findings?: string;
-  recommendations?: string;
-  follow_up_date?: string;
-  
-  // Surgery-specific fields
-  procedure_name?: string;
-  surgeon?: string;
-  anesthesia_used?: string;
-  recovery_notes?: string;
+  next_due_date?: string;
 }
 
-// Medication interface
-export interface Medication {
-  id: string;
-  dog_id?: string;
-  puppy_id?: string;
-  name: string;
-  medication_name?: string;
-  dosage?: number;
-  dosage_unit?: string;
-  frequency?: string;
-  administration_route?: string;
-  start_date?: string;
-  end_date?: string;
-  notes?: string;
-  status?: MedicationStatusResult;
-  last_administered?: string;
-  created_at?: string;
-  is_active?: boolean;
-  active?: boolean;
-  nextDue?: string | Date | null;
-  message?: string;
-}
-
-// Medication administration record
-export interface MedicationAdministration {
-  id?: string;
-  medication_id: string;
-  administered_date: string;
-  administered_by: string;
-  notes?: string;
-  created_at?: string;
-}
-
-// Health indicator (vital signs) interface
+// Health indicator for tracking specific measurements
 export interface HealthIndicator {
   id: string;
-  dog_id?: string;
-  puppy_id?: string;
-  date: string;
-  appetite: AppetiteLevel;
-  energy: EnergyLevel;
-  stool_consistency: StoolConsistency;
-  abnormal?: boolean;
-  alert_generated?: boolean;
+  dog_id: string;
+  indicator_type: string;
+  value: number;
+  unit?: string;
+  timestamp: string;
+  normal_range_min?: number;
+  normal_range_max?: number;
+  is_abnormal?: boolean;
   notes?: string;
-  created_by?: string;
-  created_at?: string;
-}
-
-// Weight record interface
-export interface WeightRecord {
-  id: string;
-  dog_id?: string;
-  puppy_id?: string;
-  weight: number;
-  weight_unit: WeightUnit;
-  unit?: WeightUnit; // For backwards compatibility
-  date: string;
-  notes?: string;
-  percent_change?: number;
   created_at: string;
+  updated_at?: string;
 }
 
-// Re-export the WeightUnit type 
-export type { WeightUnit } from './weight-units';
+// Health alert notification
+export interface HealthAlert {
+  id: string;
+  dog_id: string;
+  alert_type: string;
+  message: string;
+  severity: 'low' | 'medium' | 'high';
+  is_resolved: boolean;
+  created_at: string;
+  resolved_at?: string;
+}
 
-// Re-export HealthRecordTypeEnum from health-enums
-export { HealthRecordTypeEnum, stringToHealthRecordType } from './health-enums';
+// Temporary backward compatibility
+export { HealthRecordTypeEnum };

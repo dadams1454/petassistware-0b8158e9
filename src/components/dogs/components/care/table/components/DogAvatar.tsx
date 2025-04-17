@@ -9,7 +9,7 @@ export interface DogAvatarProps {
   flags?: DogFlag[];
   onClick?: (e: React.MouseEvent) => void;
   size?: 'sm' | 'md' | 'lg';
-  dog?: DogCareStatus; // This property is now explicitly declared
+  dog?: DogCareStatus; // This property is declared in the interface
 }
 
 const DogAvatar: React.FC<DogAvatarProps> = ({
@@ -18,7 +18,7 @@ const DogAvatar: React.FC<DogAvatarProps> = ({
   flags = [],
   onClick,
   size = 'md',
-  dog // We're now properly handling this prop
+  dog
 }) => {
   // Determine size class
   const sizeClass = {
