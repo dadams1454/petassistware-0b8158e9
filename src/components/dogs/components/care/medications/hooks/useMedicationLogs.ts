@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { processMedicationLogs, MedicationFrequencyConstants } from '@/utils/medicationUtils';
+import { processMedicationLogs } from '@/utils/medicationUtils';
 
 export const useMedicationLogs = (dogIdOrDogs: any) => {
   const [medicationLogs, setMedicationLogs] = useState<Record<string, any>>({});
@@ -14,6 +14,12 @@ export const useMedicationLogs = (dogIdOrDogs: any) => {
       setError(null);
       
       try {
+        // For mock development mode, use mock data
+        const mockData = {
+          logs: [],
+          processingMethod: 'mock'
+        };
+
         // If dogIdOrDogs is a string (single dogId)
         if (typeof dogIdOrDogs === 'string') {
           const { data, error } = await supabase
@@ -26,7 +32,7 @@ export const useMedicationLogs = (dogIdOrDogs: any) => {
           if (error) throw error;
           
           setMedicationLogs({
-            [dogIdOrDogs]: processMedicationLogs(data)
+            [dogIdOrDogs]: processMedicationLogs(data || [], mockData)
           });
         } 
         // If dogIdOrDogs is an array
@@ -47,7 +53,7 @@ export const useMedicationLogs = (dogIdOrDogs: any) => {
               
             if (error) throw error;
             
-            processedLogs[dogId] = processMedicationLogs(data);
+            processedLogs[dogId] = processMedicationLogs(data || [], mockData);
           }
           
           setMedicationLogs(processedLogs);

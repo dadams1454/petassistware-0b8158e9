@@ -70,7 +70,18 @@ export enum MedicationStatusResult {
   UPCOMING = 'upcoming',
   SKIPPED = 'skipped',
   UNKNOWN = 'unknown',
-  ACTIVE = 'active' // Added ACTIVE status that was missing
+  ACTIVE = 'active'
+}
+
+// Create a type for detailed medication status information
+export interface MedicationStatusDetail {
+  status: MedicationStatusResult;
+  lastAdministered?: string;
+  nextDue?: string | Date | null;
+  isOverdue?: boolean;
+  isPaused?: boolean;
+  isActive?: boolean;
+  message?: string;
 }
 
 export const MedicationStatusEnum = MedicationStatusResult;

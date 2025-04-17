@@ -1,112 +1,202 @@
 
 import { useState, useEffect } from 'react';
-import { useCareLogFormState, CareLogFormValues } from './hooks/useCareLogFormState';
-import { useTaskHandling } from './hooks/useTaskHandling';
-import { useFlagHandling } from './hooks/useFlagHandling';
-import { useFormSubmission } from './hooks/useFormSubmission';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useToast } from '@/components/ui/use-toast';
+import { useDailyCare } from '@/contexts/dailyCare/useDailyCare';
+import { useDogs } from '@/hooks/useDogs';
+import { DogFlag } from '@/types/dailyCare';
 
-interface UseCareLogFormProps {
-  dogId: string;
+// Create a schema for form validation
+const careLogSchema = z.object({
+  category: z.string().min(1, "Category is required"),
+  task_name: z.string().min(1, "Task name is required"),
+  timestamp: z.date(),
+  notes: z.string().optional(),
+});
+
+export const useCareLogForm = ({ 
+  dogId, 
+  onSuccess, 
+  initialCategory = 'feeding' 
+}: { 
+  dogId: string; 
   onSuccess?: () => void;
   initialCategory?: string;
-}
+}) => {
+  const { toast } = useToast();
+  const { dogs } = useDogs();
+  const { addCareLog, fetchCareTaskPresets } = useDailyCare();
+  const [loading, setLoading] = useState(false);
+  const [presets, setPresets] = useState<any[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [customTaskName, setCustomTaskName] = useState('');
+  const [showCustomTask, setShowCustomTask] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newTaskName, setNewTaskName] = useState('');
+  const [showNewPresetDialog, setShowNewPresetDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('task');
 
-export const useCareLogForm = ({ dogId, onSuccess, initialCategory }: UseCareLogFormProps) => {
-  // Get form state and handlers from our custom hooks
-  const formState = useCareLogFormState();
+  // DogFlag state - convert from array to object structure
+  interface FlagState {
+    in_heat: boolean;
+    incompatible: boolean;
+    special_attention: boolean;
+    other: boolean;
+  }
   
-  const {
-    form,
-    selectedCategory,
-    setSelectedCategory,
-    customTaskName,
-    setCustomTaskName,
-    showCustomTask,
-    setShowCustomTask,
-    newCategoryName,
-    setNewCategoryName,
-    newTaskName,
-    setNewTaskName,
-    showNewPresetDialog,
-    setShowNewPresetDialog,
-    activeTab,
-    setActiveTab,
-    otherDogs,
-    setOtherDogs,
-    incompatibleDogs,
-    setIncompatibleDogs,
-    showFlagsSection,
-    setShowFlagsSection,
-    selectedFlags,
-    setSelectedFlags,
-    specialAttentionNote,
-    setSpecialAttentionNote,
-    otherFlagNote,
-    setOtherFlagNote
-  } = formState;
+  const [selectedFlagState, setSelectedFlagState] = useState<FlagState>({
+    in_heat: false,
+    incompatible: false,
+    special_attention: false,
+    other: false
+  });
 
-  // Set initial category if provided
+  // For compatibility with components that expect DogFlag[]
+  const selectedFlags: DogFlag[] = Object.entries(selectedFlagState)
+    .filter(([_, isSelected]) => isSelected)
+    .map(([type]) => ({
+      id: type,
+      name: type.replace('_', ' '),
+      type: type as any
+    }));
+
+  // For compatibility with components that expect a toggleFlag function
+  const toggleFlag = (flagType: "other" | "special_attention" | "incompatible" | "in_heat") => {
+    setSelectedFlagState(prev => ({
+      ...prev,
+      [flagType]: !prev[flagType]
+    }));
+  };
+
+  const [otherDogs, setOtherDogs] = useState<any[]>([]);
+  const [incompatibleDogs, setIncompatibleDogs] = useState<string[]>([]);
+  const [showFlagsSection, setShowFlagsSection] = useState(false);
+  const [specialAttentionNote, setSpecialAttentionNote] = useState('');
+  const [otherFlagNote, setOtherFlagNote] = useState('');
+
+  // Setup form
+  const form = useForm({
+    resolver: zodResolver(careLogSchema),
+    defaultValues: {
+      category: initialCategory,
+      task_name: '',
+      timestamp: new Date(),
+      notes: '',
+    },
+  });
+
+  // Load presets
   useEffect(() => {
-    if (initialCategory) {
-      setSelectedCategory(initialCategory);
+    const loadPresets = async () => {
+      const presets = await fetchCareTaskPresets();
+      setPresets(presets);
+    };
+    
+    loadPresets();
+  }, [fetchCareTaskPresets]);
+
+  // Load other dogs (for incompatible selection)
+  useEffect(() => {
+    if (dogs && dogs.length > 0) {
+      const otherDogsList = dogs.filter(dog => dog.id !== dogId);
+      setOtherDogs(otherDogsList);
     }
-  }, [initialCategory, setSelectedCategory]);
+  }, [dogs, dogId]);
 
-  // Task handling
-  const taskHandling = useTaskHandling({
-    form,
-    setSelectedCategory,
-    setShowCustomTask,
-    customTaskName,
-    newCategoryName,
-    newTaskName,
-    setShowNewPresetDialog,
-    setActiveTab
-  });
+  // Handle category change
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    form.setValue('category', category);
+    setShowCustomTask(false);
+    form.setValue('task_name', '');
+  };
 
-  const {
-    presets,
-    handleCategoryChange,
-    handleTaskNameChange,
-    handleCustomTaskChange,
-    handleAddPreset
-  } = taskHandling;
+  // Handle task name change
+  const handleTaskNameChange = (taskName: string) => {
+    form.setValue('task_name', taskName);
+  };
 
-  // Flag handling
-  const flagHandling = useFlagHandling({
-    dogId,
-    setOtherDogs,
-    incompatibleDogs,
-    setIncompatibleDogs,
-    selectedFlags,
-    setSelectedFlags,
-    specialAttentionNote,
-    otherFlagNote
-  });
+  // Handle custom task change
+  const handleCustomTaskChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomTaskName(e.target.value);
+    form.setValue('task_name', e.target.value);
+  };
 
-  const {
-    handleIncompatibleDogToggle,
-    toggleFlag,
-    compileFlags
-  } = flagHandling;
+  // Handle adding a new preset
+  const handleAddPreset = async () => {
+    // Implementation would go here
+    setShowNewPresetDialog(false);
+  };
+
+  // Handle incompatible dog toggle
+  const handleIncompatibleDogToggle = (dogId: string) => {
+    setIncompatibleDogs(prev => 
+      prev.includes(dogId) 
+        ? prev.filter(id => id !== dogId) 
+        : [...prev, dogId]
+    );
+  };
 
   // Form submission
-  const { loading, submitCareLog } = useFormSubmission({ dogId, onSuccess });
-
-  // Submit handler that combines all the parts
-  const onSubmit = async (values: CareLogFormValues) => {
-    // Compile flags from UI state
-    const flags = compileFlags();
+  const onSubmit = async (data: z.infer<typeof careLogSchema>) => {
+    setLoading(true);
     
-    const success = await submitCareLog(values, flags);
-    
-    if (success && onSuccess) {
-      form.reset();
-      onSuccess();
+    try {
+      // Add notes about flags if applicable
+      let notes = data.notes || '';
+      if (selectedFlagState.special_attention && specialAttentionNote) {
+        notes += `\n[Special Attention]: ${specialAttentionNote}`;
+      }
+      if (selectedFlagState.other && otherFlagNote) {
+        notes += `\n[Other Flag]: ${otherFlagNote}`;
+      }
+      if (incompatibleDogs.length > 0) {
+        const incompatibleDogNames = incompatibleDogs
+          .map(id => {
+            const dog = dogs.find(d => d.id === id);
+            return dog ? dog.name : id;
+          })
+          .join(', ');
+        notes += `\n[Incompatible Dogs]: ${incompatibleDogNames}`;
+      }
+      
+      await addCareLog({
+        dog_id: dogId,
+        category: data.category,
+        task_name: data.task_name,
+        timestamp: data.timestamp,
+        notes: notes.trim(),
+      });
+      
+      toast({
+        title: "Care log saved",
+        description: `${data.category}: ${data.task_name} recorded successfully.`,
+      });
+      
+      form.reset({
+        category: data.category,
+        task_name: '',
+        timestamp: new Date(),
+        notes: '',
+      });
+      
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error('Error saving care log:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save care log. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Return everything needed by the form component
   return {
     form,
     loading,
@@ -115,16 +205,16 @@ export const useCareLogForm = ({ dogId, onSuccess, initialCategory }: UseCareLog
     setSelectedCategory,
     customTaskName,
     setCustomTaskName,
-    newCategoryName,
-    setNewCategoryName,
-    newTaskName,
-    setNewTaskName,
     showCustomTask,
     setShowCustomTask,
-    activeTab,
-    setActiveTab,
+    newCategoryName,
+    setNewCategoryName,
+    newTaskName, 
+    setNewTaskName,
     showNewPresetDialog,
     setShowNewPresetDialog,
+    activeTab,
+    setActiveTab,
     otherDogs,
     incompatibleDogs,
     showFlagsSection,

@@ -9,7 +9,7 @@ export interface DogAvatarProps {
   flags?: DogFlag[];
   onClick?: (e: React.MouseEvent) => void;
   size?: 'sm' | 'md' | 'lg';
-  dog?: DogCareStatus; // This property is declared in the interface
+  dog?: DogCareStatus; // Keeping this property
 }
 
 const DogAvatar: React.FC<DogAvatarProps> = ({

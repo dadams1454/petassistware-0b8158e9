@@ -19,7 +19,7 @@ export interface DogProfileTabsProps {
 
 export interface BreedingTabProps {
   dog: DogProfile;
-  form?: any; // Make form optional
+  form?: any; // Form is now optional
 }
 
 const DogProfileTabs: React.FC<DogProfileTabsProps> = ({ dog, activeTab, onTabChange, currentUser }) => {

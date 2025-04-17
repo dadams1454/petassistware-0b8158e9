@@ -14,8 +14,31 @@ export interface HealthRecord {
   record_notes?: string;
   created_at: string;
   next_due_date?: string;
-  performed_by?: string; // Add this property
+  performed_by?: string;
   vet_name?: string;
+  
+  // Vaccination fields
+  vaccine_name?: string;
+  manufacturer?: string;
+  lot_number?: string;
+  expiration_date?: string;
+  
+  // Medication fields
+  medication_name?: string;
+  dosage?: number;
+  dosage_unit?: string;
+  frequency?: string;
+  start_date?: string;
+  end_date?: string;
+  duration?: number;
+  duration_unit?: string;
+  administration_route?: string;
+  
+  // Examination fields
+  examination_type?: string;
+  findings?: string;
+  recommendations?: string;
+  follow_up_date?: string;
 }
 
 // Type guard to check if a health record is a vaccination
@@ -67,6 +90,47 @@ export interface HealthAlert {
   is_resolved: boolean;
   created_at: string;
   resolved_at?: string;
+}
+
+// Medication record definition
+export interface Medication {
+  id: string;
+  dog_id?: string;
+  puppy_id?: string;
+  name: string;
+  dosage?: number;
+  dosage_unit?: string;
+  frequency?: string;
+  start_date?: string;
+  end_date?: string;
+  notes?: string;
+  status?: string;
+  administration_route?: string;
+  last_administered?: string;
+  created_at?: string;
+  is_active?: boolean;
+  nextDue?: string | Date | null; // Used in UI
+}
+
+// Weight tracking record
+export interface WeightRecord {
+  id: string;
+  dog_id: string;
+  weight: number;
+  weight_unit: WeightUnit;
+  date: string;
+  notes?: string;
+  percent_change?: number;
+  created_at: string;
+  age_days?: number;
+}
+
+// Weight units enum
+export enum WeightUnit {
+  LBS = 'lbs',
+  KG = 'kg',
+  G = 'g',
+  OZ = 'oz'
 }
 
 // Temporary backward compatibility

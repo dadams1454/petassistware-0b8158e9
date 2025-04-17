@@ -8,6 +8,7 @@ import LoadedDogsContent from './dashboard/LoadedDogsContent';
 import { useCareDashboard } from './dashboard/useCareDashboard';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+import { DogCareStatus } from '@/types/dailyCare';
 
 interface CareDashboardProps {}
 
@@ -20,7 +21,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     selectedCategory,
     loading,
     loadError,
-    dogStatuses,
+    dogStatuses: originalDogStatuses,
     setActiveView,
     setDialogOpen,
     handleLogCare,
@@ -28,6 +29,15 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     handleCareLogSuccess,
     handleCategoryChange
   } = useCareDashboard();
+  
+  // Convert the dog statuses to the expected type if needed
+  const dogStatuses: DogCareStatus[] = originalDogStatuses?.map(dog => ({
+    ...dog,
+    id: dog.dog_id, // Add id for compatibility
+    name: dog.dog_name, // Add name for compatibility
+    status: 'active', // Default status
+    last_updated: dog.last_care?.timestamp || (new Date()).toISOString() // Add last_updated field
+  })) || [];
 
   return (
     <div className="space-y-4">
