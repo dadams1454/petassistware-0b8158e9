@@ -1,92 +1,108 @@
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
-import { DogCareStatus } from '@/types/dailyCare';
-import { useCareLogsData } from './pottyBreakHooks/useCareLogsData';
-import { useCellActions } from './pottyBreakHooks/useCellActions';
-import { useRefreshHandler } from './pottyBreakHooks/useRefreshHandler';
-import { useObservations } from './pottyBreakHooks/useObservations';
-import { useDogSorting } from './pottyBreakHooks/useDogSorting';
+import { useState, useEffect, useCallback } from 'react';
+import { useToast } from '@/components/ui/use-toast';
+import { DogCareStatus, CareLog } from '@/types/dailyCare';
+import { useCareLogs } from '@/hooks/useCareLogs';
+import { useDailyCare } from '@/contexts/dailyCare';
+import { useCareTracking } from '../components/useCareTracking';
 
-const usePottyBreakTable = (
-  dogsStatus: DogCareStatus[], 
-  onRefresh?: () => void,
-  activeCategory: string = 'feeding',
-  currentDate: Date = new Date()
-) => {
-  // Set up time slots for the table
-  const [timeSlots] = useState(() => {
-    const slots: string[] = [];
-    for (let hour = 6; hour < 21; hour++) {
-      const formattedHour = hour > 12 ? hour - 12 : hour;
-      const amPm = hour >= 12 ? 'PM' : 'AM';
-      slots.push(`${formattedHour}:00 ${amPm}`);
-    }
-    return slots;
+const usePottyBreakTable = (dogs: DogCareStatus[]) => {
+  const [timeSlots, setTimeSlots] = useState<string[]>([]);
+  const { toast } = useToast();
+  const { fetchDogCareLogs } = useDailyCare();
+  
+  // Create our own tracking state instead of using useCareTracking
+  const [careLogged, setCareLogged] = useState<Record<string, boolean>>({});
+  
+  const { careLogs, loading, error, refresh } = useCareLogs({
+    dogIds: dogs.map(dog => dog.dog_id),
+    category: 'pottybreaks'
   });
   
-  // Get current hour for highlighting
-  const [currentHour, setCurrentHour] = useState<number>(() => {
-    const now = new Date();
-    return now.getHours();
-  });
+  // Custom implementation of hasCareLogged
+  const hasCareLogged = useCallback((dogId: string, timeSlot: string, category: string) => {
+    const key = `${dogId}-${timeSlot}-${category}`;
+    return careLogged[key] || false;
+  }, [careLogged]);
   
-  // Update current hour periodically
+  // Initialize time slots
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      const now = new Date();
-      setCurrentHour(now.getHours());
-    }, 60000); // check every minute
-    
-    return () => clearInterval(intervalId);
+    const slots = [];
+    for (let hour = 6; hour < 22; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        const formattedHour = hour.toString().padStart(2, '0');
+        const formattedMinute = minute.toString().padStart(2, '0');
+        slots.push(`${formattedHour}:${formattedMinute}`);
+      }
+    }
+    setTimeSlots(slots);
   }, []);
   
-  // Use the care logs data hook for other care types - pass an empty array as fallback
-  const { hasCareLogged, isLoading: careLoading } = useCareLogsData(dogsStatus || []);
+  // Initialize care logged state from care logs
+  useEffect(() => {
+    if (careLogs && careLogs.length > 0) {
+      const newCareLogged: Record<string, boolean> = {};
+      
+      careLogs.forEach(log => {
+        const logDate = new Date(log.timestamp);
+        const timeSlot = `${logDate.getHours().toString().padStart(2, '0')}:${logDate.getMinutes().toString().padStart(2, '0')}`;
+        const key = `${log.dog_id}-${timeSlot}-${log.category}`;
+        newCareLogged[key] = true;
+      });
+      
+      setCareLogged(newCareLogged);
+    }
+  }, [careLogs]);
   
-  // Use the observations hook
-  const { 
-    observations,
-    hasObservation,
-    getObservationDetails,
-    isLoading: obsLoading 
-  } = useObservations(dogsStatus);
-  
-  // Use the cell actions hook
-  const { isLoading: actionLoading, handleCellClick } = useCellActions(
-    currentDate,
-    {},  // Empty potty breaks object
-    () => {}, // Empty set function
-    onRefresh,
-    activeCategory
-  );
-  
-  // Use the refresh handler hook
-  const { handleRefresh, isRefreshing } = useRefreshHandler(onRefresh || (() => {}));
-  
-  // Use the dog sorting hook
-  const { sortedDogs } = useDogSorting(dogsStatus);
-  
-  // Overall loading state
-  const isLoading = useMemo(() => {
-    return careLoading || obsLoading || actionLoading || isRefreshing;
-  }, [careLoading, obsLoading, actionLoading, isRefreshing]);
-  
-  // Empty implementation for hasPottyBreak
-  const hasPottyBreak = useCallback((dogId: string, timeSlot: string) => false, []);
+  // Function to handle cell click
+  const handleCellClick = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
+    const key = `${dogId}-${timeSlot}-${category}`;
+    
+    // Toggle care logged state
+    if (careLogged[key]) {
+      // Remove the care logged
+      const updatedCareLogged = { ...careLogged };
+      delete updatedCareLogged[key];
+      setCareLogged(updatedCareLogged);
+      
+      // Find the care log to delete
+      const logToDelete = careLogs.find(log => {
+        const logDate = new Date(log.timestamp);
+        const logTimeSlot = `${logDate.getHours().toString().padStart(2, '0')}:${logDate.getMinutes().toString().padStart(2, '0')}`;
+        return log.dog_id === dogId && logTimeSlot === timeSlot && log.category === category;
+      });
+      
+      // TODO: Implement delete functionality
+      toast({
+        title: "Potty break removed",
+        description: `Removed potty break for ${dogName} at ${timeSlot}`
+      });
+    } else {
+      // Add new care logged
+      setCareLogged(prev => ({
+        ...prev,
+        [key]: true
+      }));
+      
+      // TODO: Implement add functionality
+      toast({
+        title: "Potty break logged",
+        description: `Logged potty break for ${dogName} at ${timeSlot}`
+      });
+    }
+    
+    // Refresh care logs
+    refresh();
+  }, [careLogged, careLogs, refresh, toast]);
   
   return {
     timeSlots,
-    currentHour,
-    pottyBreaks: {},
-    sortedDogs,
-    hasPottyBreak,
+    careLogs,
+    loading,
+    error,
+    refresh,
     hasCareLogged,
-    hasObservation,
-    getObservationDetails,
-    handleCellClick,
-    handleRefresh,
-    isLoading,
-    isPendingFeeding: () => false
+    handleCellClick
   };
 };
 

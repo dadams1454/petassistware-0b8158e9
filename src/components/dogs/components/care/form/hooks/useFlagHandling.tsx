@@ -115,6 +115,7 @@ export const useFlagHandling = ({
         id: 'special-attention',
         name: 'Special Attention',
         color: '#ff9900',
+        value: specialAttentionNote,
         description: specialAttentionNote,
         type: 'special_attention'
       });
@@ -126,6 +127,7 @@ export const useFlagHandling = ({
         id: 'other-note',
         name: 'Other Note',
         color: '#888888',
+        value: otherFlagNote,
         description: otherFlagNote,
         type: 'other'
       });
@@ -137,6 +139,7 @@ export const useFlagHandling = ({
         id: 'incompatible-dogs',
         name: 'Incompatible Dogs',
         color: '#cc0000',
+        value: `Incompatible with dogs: ${incompatibleDogs.join(', ')}`,
         description: `Incompatible with dogs: ${incompatibleDogs.join(', ')}`,
         type: 'incompatible',
         incompatible_with: incompatibleDogs

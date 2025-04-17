@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Heart, Slash, AlertCircle, Flag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -24,7 +25,9 @@ export const DogFlagsList: React.FC<DogFlagsListProps> = ({ flags }) => {
             break;
           case 'incompatible':
             icon = <Slash className="h-4 w-4 text-amber-500" />;
-            tooltipText = `Doesn't get along with ${flag.incompatible_with?.length} other dog(s)`;
+            tooltipText = flag.incompatible_with && flag.incompatible_with.length > 0 
+              ? `Doesn't get along with ${flag.incompatible_with.length} other dog(s)` 
+              : 'Incompatible with other dogs';
             color = 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300';
             break;
           case 'special_attention':

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { DogCareStatus, DogFlag } from '@/types/dailyCare';
 import DogAvatar from '@/components/common/avatars/DogAvatar';
@@ -8,24 +9,34 @@ export interface DogNameCellProps {
   onClick?: (dog: DogCareStatus) => void;
   onCareLog?: (dog: DogCareStatus) => void;
   onObservationClick?: (dog: DogCareStatus) => void;
+  onCareLogClick?: (dog: DogCareStatus) => void; // Added this prop
+  onDogClick?: (dog: DogCareStatus) => void; // Added this prop
   showLastObservation?: boolean;
+  activeCategory?: string; // Added this prop
+  hasObservation?: boolean; // Added this prop
 }
 
 const DogNameCell: React.FC<DogNameCellProps> = ({
   dog,
   onClick,
   onCareLog,
+  onCareLogClick,
+  onDogClick,
   onObservationClick,
   showLastObservation = true,
+  activeCategory,
+  hasObservation
 }) => {
   const handleDogClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onClick?.(dog);
+    onDogClick?.(dog); // Also call onDogClick if provided
   };
 
   const handleCareLogClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onCareLog?.(dog);
+    onCareLogClick?.(dog); // Also call onCareLogClick if provided
   };
 
   const handleObservation = (e: React.MouseEvent) => {

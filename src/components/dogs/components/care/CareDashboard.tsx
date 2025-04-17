@@ -21,7 +21,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     selectedCategory,
     loading,
     loadError,
-    dogStatuses: originalDogStatuses,
+    dogStatuses,
     setActiveView,
     setDialogOpen,
     handleLogCare,
@@ -30,14 +30,8 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     handleCategoryChange
   } = useCareDashboard();
   
-  // Convert the dog statuses to the expected type if needed
-  const dogStatuses: DogCareStatus[] = originalDogStatuses?.map(dog => ({
-    ...dog,
-    id: dog.dog_id, // Add id for compatibility
-    name: dog.dog_name, // Add name for compatibility
-    status: 'active', // Default status
-    last_updated: dog.last_care?.timestamp || (new Date()).toISOString() // Add last_updated field
-  })) || [];
+  // We don't need this conversion anymore as the type now has dog_name and last_care
+  const dogStatusesWithCorrectFormat = dogStatuses || [];
 
   return (
     <div className="space-y-4">
@@ -72,9 +66,9 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
         onRetry={handleRefresh} 
       />
       
-      {!loading && !loadError && dogStatuses && dogStatuses.length > 0 ? (
+      {!loading && !loadError && dogStatusesWithCorrectFormat && dogStatusesWithCorrectFormat.length > 0 ? (
         <LoadedDogsContent 
-          dogStatuses={dogStatuses}
+          dogStatuses={dogStatusesWithCorrectFormat}
           activeView={activeView}
           selectedCategory={selectedCategory}
           selectedDogId={selectedDogId}
@@ -83,7 +77,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
           onLogCare={handleLogCare}
           onCareLogSuccess={handleCareLogSuccess}
         />
-      ) : (!loading && !loadError && (!dogStatuses || dogStatuses.length === 0)) ? (
+      ) : (!loading && !loadError && (!dogStatusesWithCorrectFormat || dogStatusesWithCorrectFormat.length === 0)) ? (
         <NoDogsState onRefresh={handleRefresh} />
       ) : null}
     </div>

@@ -5,6 +5,9 @@ export interface DogFlag {
   name: string;
   color?: string;
   type?: 'in_heat' | 'special_attention' | 'incompatible' | 'other';
+  value?: string;
+  description?: string;
+  incompatible_with?: string[];
 }
 
 // Care status interface for a dog
@@ -69,9 +72,12 @@ export interface DailyCarelog {
 export interface CareLogFormData {
   dog_id: string;
   category: string;
-  task_name: string;
+  task: string; // Use task or task_name consistently
+  task_name?: string;
   timestamp: string | Date;
   notes?: string;
+  flags?: string[] | DogFlag[];
+  metadata?: any;
 }
 
 // Interface for care task presets
@@ -91,5 +97,30 @@ export interface CareLog {
   category: string;
   task_name: string;
   timestamp: string;
+  notes?: string;
+}
+
+// Export FlagType separately for type checking
+export type FlagType = 'in_heat' | 'special_attention' | 'incompatible' | 'other';
+
+// Export DogCareObservation interface
+export interface DogCareObservation {
+  id: string;
+  dog_id: string;
+  time_slot: string;
+  category: string;
+  observation_type: string;
+  notes?: string;
+  timestamp: Date | string;
+}
+
+// Export CareScheduleItem interface
+export interface CareScheduleItem {
+  id: string;
+  dog_id: string;
+  category: string;
+  scheduled_time: string;
+  completed: boolean;
+  completed_at?: string;
   notes?: string;
 }

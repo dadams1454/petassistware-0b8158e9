@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/components/ui/use-toast';
-import { useDailyCare } from '@/contexts/dailyCare/useDailyCare';
+import { useDailyCare } from '@/contexts/dailyCare'; // Fixed import
 import { useDogs } from '@/hooks/useDogs';
 import { DogFlag } from '@/types/dailyCare';
 
