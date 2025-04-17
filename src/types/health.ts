@@ -1,6 +1,7 @@
 
 import { MedicationStatusResult } from './medication-status';
 import { AppetiteLevel, EnergyLevel, StoolConsistency } from './health-enums';
+import { WeightUnit } from './weight-units';
 
 /**
  * Health Record interfaces
@@ -106,3 +107,21 @@ export interface HealthIndicator {
   created_by?: string;
   created_at?: string;
 }
+
+// Weight record interface
+export interface WeightRecord {
+  id: string;
+  dog_id?: string;
+  puppy_id?: string;
+  weight: number;
+  weight_unit: WeightUnit;
+  date: string;
+  notes?: string;
+  percent_change?: number;
+  created_at: string;
+}
+
+// Export WeightUnit from here for compatibility
+export { WeightUnit } from './weight-units';
+// Export HealthRecordTypeEnum from health-enums
+export { HealthRecordTypeEnum } from './health-enums';

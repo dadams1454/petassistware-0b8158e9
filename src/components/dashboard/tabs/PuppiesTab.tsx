@@ -17,11 +17,11 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
   const puppyStats = usePuppyTracking();
   
   // Extract properties with fallbacks to handle potential undefined values
-  const allPuppies = puppyStats.allPuppies || puppyStats.puppies || [];
+  const allPuppies = puppyStats.puppies || [];
   const ageGroups = puppyStats.ageGroups || [];
   const byAgeGroup = puppyStats.byAgeGroup || {};
   const totalPuppies = puppyStats.totalPuppies || 0;
-  const isLoading = puppyStats.isLoading || puppyStats.loading || false;
+  const isLoading = puppyStats.isLoading || false;
   
   // Add a loading state until puppy data is available
   const [localLoading, setLocalLoading] = useState(true);
@@ -70,12 +70,12 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     );
   }
 
-  // Sort age groups by their sort_order property
+  // Sort age groups by their minDays property instead of sort_order
   const sortedAgeGroups = [...ageGroups].sort((a, b) => {
-    // Ensure sort_order exists, fallback to 0 if it doesn't
-    const sortOrderA = a.sort_order !== undefined ? a.sort_order : 0;
-    const sortOrderB = b.sort_order !== undefined ? b.sort_order : 0;
-    return sortOrderA - sortOrderB;
+    // Use minDays for sorting instead of sort_order
+    const minDaysA = a.minDays !== undefined ? a.minDays : 0;
+    const minDaysB = b.minDays !== undefined ? b.minDays : 0;
+    return minDaysA - minDaysB;
   });
 
   return (

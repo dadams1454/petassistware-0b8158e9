@@ -1,123 +1,136 @@
 
-import { useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
 import { DogFlag } from '@/types/dailyCare';
+import { toast } from '@/hooks/use-toast';
 
-interface UseFlagHandlingProps {
-  dogId: string;
-  setOtherDogs: (dogs: Array<{ id: string; name: string }>) => void;
-  incompatibleDogs: string[];
-  setIncompatibleDogs: (dogs: string[]) => void;
-  selectedFlags: {
-    in_heat: boolean;
-    incompatible: boolean;
-    special_attention: boolean;
-    other: boolean;
-  };
-  setSelectedFlags: React.Dispatch<React.SetStateAction<{
-    in_heat: boolean;
-    incompatible: boolean;
-    special_attention: boolean;
-    other: boolean;
-  }>>;
-  specialAttentionNote: string;
-  otherFlagNote: string;
+export interface UseFlagHandlingProps {
+  initialFlags?: DogFlag[];
+  onFlagChange?: (flags: DogFlag[]) => void;
 }
 
 export const useFlagHandling = ({
-  dogId,
-  setOtherDogs,
-  incompatibleDogs,
-  setIncompatibleDogs,
-  selectedFlags,
-  setSelectedFlags,
-  specialAttentionNote,
-  otherFlagNote
+  initialFlags = [],
+  onFlagChange
 }: UseFlagHandlingProps) => {
+  const [selectedFlags, setSelectedFlags] = useState<DogFlag[]>(initialFlags);
+  const [hasConflict, setHasConflict] = useState(false);
+
   useEffect(() => {
-    // Fetch other dogs for incompatibility selection
-    const fetchOtherDogs = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('dogs')
-          .select('id, name')
-          .neq('id', dogId)
-          .order('name');
+    // Run conflict detection whenever flags change
+    detectConflicts(selectedFlags);
+    // Notify parent component of flag changes if callback provided
+    if (onFlagChange) {
+      onFlagChange(selectedFlags);
+    }
+  }, [selectedFlags, onFlagChange]);
+
+  const detectConflicts = (flags: DogFlag[]) => {
+    let conflicts = false;
+
+    // Check each flag against all other flags
+    flags.forEach((flag) => {
+      if (flag.incompatible_with && flag.incompatible_with.length > 0) {
+        // Check if any incompatible flags are also selected
+        const hasConflictingFlag = flags.some(
+          (otherFlag) => 
+            flag.id !== otherFlag.id && 
+            flag.incompatible_with?.includes(otherFlag.id)
+        );
         
-        if (error) throw error;
-        setOtherDogs(data || []);
-      } catch (error) {
-        console.error('Error fetching other dogs:', error);
+        if (hasConflictingFlag) {
+          conflicts = true;
+        }
       }
+    });
+
+    setHasConflict(conflicts);
+    return conflicts;
+  };
+
+  const toggleFlag = (flag: DogFlag) => {
+    const isAlreadySelected = selectedFlags.some(f => f.id === flag.id);
+    
+    if (isAlreadySelected) {
+      // Remove the flag
+      setSelectedFlags(selectedFlags.filter(f => f.id !== flag.id));
+    } else {
+      // Add the flag
+      const newFlags = [...selectedFlags, flag];
+      
+      // Check for conflicts before adding
+      const wouldHaveConflict = detectConflicts(newFlags);
+      
+      if (wouldHaveConflict) {
+        toast({
+          title: "Flag Conflict",
+          description: `Flag "${flag.name}" conflicts with another selected flag.`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setSelectedFlags(newFlags);
+    }
+  };
+
+  const createNoteFlag = () => {
+    // Create a properly structured DogFlag object
+    const noteFlag: DogFlag = {
+      id: 'note-' + Date.now(),
+      name: 'Note Added',
+      color: '#FFD700',
+      type: 'note'
     };
     
-    fetchOtherDogs();
-  }, [dogId, setOtherDogs]);
-
-  const handleIncompatibleDogToggle = (dogId: string) => {
-    // Create a new array instead of using a function-based update
-    const updated = incompatibleDogs.includes(dogId)
-      ? incompatibleDogs.filter(id => id !== dogId)
-      : [...incompatibleDogs, dogId];
-    
-    setIncompatibleDogs(updated);
+    toggleFlag(noteFlag);
   };
 
-  const toggleFlag = (flagType: keyof typeof selectedFlags) => {
-    setSelectedFlags(prev => ({
-      ...prev,
-      [flagType]: !prev[flagType]
-    }));
+  const createUrgentFlag = (incompatibleFlags: string[] = []) => {
+    // Create a properly structured DogFlag object
+    const urgentFlag: DogFlag = {
+      id: 'urgent-' + Date.now(),
+      name: 'Urgent',
+      color: '#FF0000',
+      type: 'urgent',
+      incompatible_with: incompatibleFlags
+    };
+    
+    toggleFlag(urgentFlag);
   };
 
-  const compileFlags = (): DogFlag[] => {
-    const flags: DogFlag[] = [];
+  const createFollowUpFlag = (value: string) => {
+    // Create a properly structured DogFlag object
+    const followUpFlag: DogFlag = {
+      id: 'follow-up-' + Date.now(),
+      name: 'Follow Up',
+      color: '#FFA500',
+      type: 'follow-up',
+      value
+    };
     
-    if (selectedFlags.in_heat) {
-      flags.push({ 
-        id: `in_heat_${dogId}`,
-        name: 'In Heat', 
-        color: 'red',
-        type: 'in_heat' 
-      });
-    }
+    toggleFlag(followUpFlag);
+  };
+
+  const createAbnormalFlag = (value: string) => {
+    // Create a properly structured DogFlag object
+    const abnormalFlag: DogFlag = {
+      id: 'abnormal-' + Date.now(),
+      name: 'Abnormal',
+      color: '#8B0000',
+      type: 'abnormal',
+      value
+    };
     
-    if (selectedFlags.incompatible && incompatibleDogs.length > 0) {
-      flags.push({ 
-        id: `incompatible_${dogId}`,
-        name: 'Incompatible',
-        color: 'orange',
-        type: 'incompatible',
-        incompatible_with: incompatibleDogs
-      });
-    }
-    
-    if (selectedFlags.special_attention && specialAttentionNote) {
-      flags.push({
-        id: `special_attention_${dogId}`,
-        name: 'Special Attention',
-        color: 'yellow',
-        type: 'special_attention',
-        value: specialAttentionNote
-      });
-    }
-    
-    if (selectedFlags.other && otherFlagNote) {
-      flags.push({
-        id: `other_flag_${dogId}`,
-        name: 'Other',
-        color: 'gray',
-        type: 'other',
-        value: otherFlagNote
-      });
-    }
-    
-    return flags;
+    toggleFlag(abnormalFlag);
   };
 
   return {
-    handleIncompatibleDogToggle,
+    selectedFlags,
+    hasConflict,
     toggleFlag,
-    compileFlags
+    createNoteFlag,
+    createUrgentFlag,
+    createFollowUpFlag,
+    createAbnormalFlag
   };
 };

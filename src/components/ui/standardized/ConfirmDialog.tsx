@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { ReactNode } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,42 +10,50 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 export interface ConfirmDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   title: string;
   description: string;
+  onConfirm: () => void;
+  onCancel: () => void;
   confirmLabel?: string;
   cancelLabel?: string;
-  onConfirm: () => void;
-  onCancel?: () => void;
-  variant?: 'destructive' | 'default';
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  variant?: 'default' | 'destructive';
+  isLoading?: boolean;
+  children?: ReactNode;
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
-  open,
-  onOpenChange,
   title,
   description,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
   onConfirm,
   onCancel,
-  variant = 'default'
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
+  isOpen,
+  onOpenChange,
+  variant = 'default',
+  isLoading = false,
+  children
 }) => {
   const handleConfirm = () => {
     onConfirm();
-    onOpenChange(false);
+    if (!isLoading) {
+      onOpenChange(false);
+    }
   };
 
   const handleCancel = () => {
-    if (onCancel) onCancel();
+    onCancel();
     onOpenChange(false);
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
@@ -53,16 +61,29 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             {description}
           </AlertDialogDescription>
         </AlertDialogHeader>
+        
+        {children && (
+          <div className="py-4">
+            {children}
+          </div>
+        )}
+        
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={handleCancel}>
+          <AlertDialogCancel
+            onClick={handleCancel}
+            disabled={isLoading}
+          >
             {cancelLabel}
           </AlertDialogCancel>
-          <AlertDialogAction 
+          <Button
+            variant={variant}
             onClick={handleConfirm}
-            className={variant === 'destructive' ? 'bg-destructive hover:bg-destructive/90' : undefined}
+            disabled={isLoading}
+            className="gap-2"
           >
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             {confirmLabel}
-          </AlertDialogAction>
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

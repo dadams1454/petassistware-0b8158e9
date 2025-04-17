@@ -10,10 +10,11 @@ export interface DailyCarelog {
   timestamp: string;
   category: string;
   task: string;
-  task_name?: string; // Added this to fix compatibility issues
+  task_name: string; // Added this to fix compatibility issues
   notes?: string;
   flags?: string[];
   completed_by?: string;
+  created_by?: string; // Added for compatibility
   metadata?: Record<string, any>;
   created_at: string;
   updated_at?: string;
@@ -25,6 +26,7 @@ export interface CareLogFormData {
   timestamp: string | Date;
   category: string;
   task: string;
+  task_name?: string; // Added for compatibility
   notes?: string;
   flags?: string[];
   metadata?: Record<string, any>;
@@ -114,3 +116,6 @@ export interface CareScheduleItem {
   created_at: string;
   updated_at?: string;
 }
+
+// Alias type for compatibility
+export type CareLog = DailyCarelog;

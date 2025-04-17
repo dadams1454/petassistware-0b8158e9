@@ -1,3 +1,4 @@
+
 /**
  * Core type definitions for puppies module
  */
@@ -48,7 +49,7 @@ export interface PuppyAgeGroup {
   description?: string;
   min_days: number;
   max_days: number;
-  sort_order: number;
+  sort_order: number; // Added sort_order property for sorting
   groupName?: string; // For compatibility with some components
   displayName?: string;
   ageRange?: string;

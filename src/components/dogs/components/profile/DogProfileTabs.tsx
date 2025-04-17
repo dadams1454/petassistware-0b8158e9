@@ -36,7 +36,7 @@ export interface CareTabProps {
 
 export interface BreedingTabProps {
   dog: DogProfile;
-  form?: UseFormReturn<any>;
+  form?: UseFormReturn<any>; // Made this optional
   lastHeatDate?: Date | null;
   isPregnant?: boolean;
   nextHeatDate?: Date | null;
