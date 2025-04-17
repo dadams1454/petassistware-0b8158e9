@@ -18,9 +18,6 @@ export const FREQUENCY = {
   CUSTOM: 'Custom'
 };
 
-// Add alias for backward compatibility
-FREQUENCY.DAILY = FREQUENCY.ONCE_DAILY;
-
 // Define duration units
 export const DURATION_UNITS = [
   'day(s)', 'week(s)', 'month(s)'
