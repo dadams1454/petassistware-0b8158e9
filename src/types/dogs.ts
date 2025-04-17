@@ -41,5 +41,7 @@ export interface Dog {
   tenant_id?: string;
 }
 
-// Re-export DogGender enum for compatibility
+// Re-export but don't use star exports
+// export * from './dog';
+// Instead, explicitly re-export the types:
 export { DogGender, DogStatus };

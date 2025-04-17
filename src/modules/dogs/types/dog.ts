@@ -1,19 +1,14 @@
-
 import { WeightUnit } from '@/types/weight-units';
+import { DogStatus as CoreDogStatus, DogGender as CoreDogGender } from '@/types/unified';
 
+// Alias the imported enums to avoid conflicts
 export enum DogGender {
-  Male = 'male',
-  Female = 'female'
+  Male = CoreDogGender.MALE,
+  Female = CoreDogGender.FEMALE
 }
 
-export enum DogStatus {
-  Active = 'active',
-  Inactive = 'inactive',
-  Deceased = 'deceased',
-  Sold = 'sold',
-  Rehomed = 'rehomed',
-  Guardian = 'guardian'
-}
+// Reuse the core enum but with a module-specific alias
+export { CoreDogStatus as DogStatus };
 
 export interface DogProfile {
   id: string;
