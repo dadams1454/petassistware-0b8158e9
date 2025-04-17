@@ -1,4 +1,3 @@
-
 /**
  * Weight unit type definitions
  */
